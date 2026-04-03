@@ -1,0 +1,90 @@
+Developer Specification: Native Local Modular RAG System
+
+Role: Senior Full-Stack Engineer & Software Architect
+Objective: Build a modular, local-first RAG system using TypeScript. All components must be installed and run natively on the host OS (no Docker). The system will crawl documentation, store it in isolated local vector collections, and provide a multi-vendor query interface.
+1. Technical Stack & Local Requirements
+
+    Runtime: Node.js (v20+ installed via nvm or installer)
+
+    Language: TypeScript (Strict mode)
+
+    Frontend: Next.js (App Router) using Basecoat UI (https://basecoatui.com/)
+
+    Web Crawler: Crawlee (Playwright-based, using local browser binaries)
+
+    Vector Database: ChromaDB (Running as a local persistent client/process via chromadb npm package)
+
+    LLM Integration: * Ollama: Native desktop installation (listening on 11434)
+
+        Microsoft Copilot: Integration via official SDK or OpenAI-compatible endpoint
+
+    Storage: Local filesystem for raw files; SQLite for chat history
+
+2. Component Requirements
+Module A: Native Web Crawler & Scheduler
+
+    Configuration: A vendors.config.json defining URLs and inclusion filters.
+
+    Implementation: Use Crawlee with the PlaywrightCrawler.
+
+        Note: Ensure the script checks for local browser installations or runs npx playwright install.
+
+    Scheduling: Use node-cron to manage background refresh cycles.
+
+    Data Staging: Save raw scraped Markdown to a local directory: ~/Documents/RAG-Data/raw/[vendor_id].
+
+Module B: Ingestion & Local Vector Storage
+
+    Vector DB: Initialize ChromaDB in Persistent Mode (saving data to a local folder like ./chroma_data) instead of a Docker container.
+
+    Pipeline:
+
+        Parse local Markdown files.
+
+        Chunk data (1000 tokens, 10% overlap).
+
+        Generate embeddings via local Ollama API (nomic-embed-text).
+
+        Create and upsert into a Unique Collection per vendor within the local Chroma instance.
+
+Module C: Query Orchestrator
+
+    Routing Logic: Build a service that accepts a vendorIds[] array.
+
+        If vendorIds.length === 1, query only that specific Chroma collection.
+
+        If vendorIds.length > 1, perform a multi-collection search and aggregate context.
+
+    Model Switching: Implement a provider-switch for the completion phase (Ollama vs. Copilot).
+
+Module D: Web Interface (Basecoat UI)
+
+    Aesthetic: High-end, minimalist design.
+
+    Palette: Use Midnight Navy (#001529) for structural elements and Vibrant Cyan (#00E5FF) for active states/links.
+
+    Layout:
+
+        Sidebar: Multi-select list of available vendor documentations detected in the local vector DB.
+
+        Chat View: Threaded conversation history with a dedicated prompt input using Basecoat's form components.
+
+    Persistence: Use Prisma + SQLite (local .db file) to store session titles and message history.
+
+3. Workflow & Local Logic
+
+    Init: User runs npm run dev. The app verifies Ollama is running at localhost:11434.
+
+    Crawl: The user triggers a crawl via the UI or config; files are saved locally.
+
+    Search: The user selects "Vendor A" and "Vendor B." The system pulls context from two separate local vector collections.
+
+    Response: The local LLM synthesizes the answer and displays it in the Basecoat-themed text box.
+
+4. Setup & Implementation Deliverables
+
+    A setup.sh or setup.bat script to automate npm install and local dependency checks.
+
+    A unified package.json with scripts to run the crawler and web app concurrently.
+
+    A README.md with explicit instructions on installing the Ollama desktop app and setting up the local environment variables.

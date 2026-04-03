@@ -1,0 +1,49 @@
+{
+  "name": "doc-speak-rag",
+  "version": "1.0.0",
+  "description": "Native Local Modular RAG System",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run crawler:watch\" \"npm run web:dev\"",
+    "build": "next build && npm run crawler:build",
+    "start": "next start",
+    "web:dev": "next dev",
+    "web:build": "next build",
+    "crawler:build": "tsc --project tsconfig.crawler.json",
+    "crawler:watch": "tsc --watch --project tsconfig.crawler.json",
+    "crawler:run": "node dist/crawler/index.js",
+    "setup": "node scripts/setup.js",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "next": "^14.2.0",
+    "typescript": "^5.4.5",
+    "basecoat": "^1.0.0",
+    "crawlee": "^3.10.0",
+    "playwright": "^1.43.0",
+    "node-cron": "^3.0.3",
+    "chromadb": "^1.7.0",
+    "ollama": "^0.2.1",
+    "@prisma/client": "^5.11.0",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "openai": "^4.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.47",
+    "@types/react-dom": "^18.2.18",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "concurrently": "^8.2.2",
+    "prisma": "^5.11.0",
+    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33"
+  }
+}

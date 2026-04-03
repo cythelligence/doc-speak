@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  # Optional: ChromaDB container (if not using local client)
+  # chromadb:
+  #   image: ghcr.io/chroma-core/chroma:latest
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - chroma_data:/chroma/data
+  #   environment:
+  #     - CHROMA_TELEMETRY_ENABLED=false
+
+  # Optional: pgvector for production vector storage
+  # pgvector:
+  #   image: ankane/pgvector
+  #   environment:
+  #     POSTGRES_PASSWORD: postgres
+  #   volumes:
+  #     - pgvector_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+  # Optional: Redis for caching
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+
+# volumes:
+#   chroma_data:
+#   pgvector_data:
+#   redis_data:
