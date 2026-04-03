@@ -23,7 +23,7 @@ export function loadVendors(): VendorConfig[] {
     return cachedVendors;
   }
 
-  const configPath = path.join(__dirname, "../config/vendors.yaml");
+  const configPath = path.join(__dirname, "../../config/vendors.yaml");
 
   if (!fs.existsSync(configPath)) {
     throw new Error(`Vendors configuration file not found at ${configPath}`);

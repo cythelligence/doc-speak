@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { Logger } from "./logger";
 import { crawlVendor } from "./web-crawler";
-import { vendors } from "../vendors.config";
+import { vendors } from "./vendors.config";
 import * as path from "path";
 import * as os from "os";
 

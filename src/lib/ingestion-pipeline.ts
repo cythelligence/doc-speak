@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as os from "os";
 import { Logger } from "../crawler/logger";
-import { vendors } from "../vendors.config";
+import { vendors } from "../crawler/vendors.config";
 import {
   loadMarkdownFilesFromDirectory,
 } from "./chunking";

@@ -64,7 +64,6 @@ export async function initializeBrowsers() {
 
 export async function crawlVendor(config: CrawleConfig): Promise<string[]> {
   const crawledUrls: string[] = [];
-  const pageContents: Map<string, string> = new Map();
   const visitedUrls = new Set<string>();
 
   const crawler = new PlaywrightCrawler({
@@ -93,7 +92,8 @@ export async function crawlVendor(config: CrawleConfig): Promise<string[]> {
         });
 
         if (content && content.trim().length > 0) {
-          pageContents.set(url, content);
+          // Save crawled content to markdown file
+          await saveContentToMarkdown(url, content, config.outputPath, config.vendorId);
           crawledUrls.push(url);
         }
 
@@ -130,15 +130,13 @@ export async function crawlVendor(config: CrawleConfig): Promise<string[]> {
 
   await crawler.run();
 
-  // Save crawled content to markdown files
-  await saveContentToMarkdown(pageContents, config.outputPath, config.vendorId);
-
   logger.info(`Crawled ${crawledUrls.length} pages for ${config.vendorId}`);
   return crawledUrls;
 }
 
 async function saveContentToMarkdown(
-  contents: Map<string, string>,
+  url: string,
+  content: string,
   outputPath: string,
   vendorId: string
 ): Promise<void> {
@@ -149,15 +147,14 @@ async function saveContentToMarkdown(
     fs.mkdirSync(vendorPath, { recursive: true });
   }
 
-  for (const [url, content] of contents) {
-    const fileName = url
-      .replace(/https?:\/\//, "")
-      .replace(/[^a-z0-9]/gi, "_")
-      .substring(0, 100);
+  const fileName = url
+    .replace(/https?:\/\//, "")
+    .replace(/[^a-z0-9]/gi, "_")
+    .substring(0, 100);
 
-    const mdFile = path.join(vendorPath, `${fileName}.md`);
+  const mdFile = path.join(vendorPath, `${fileName}.md`);
 
-    const markdown = `# Page Content from ${url}
+  const markdown = `# Page Content from ${url}
 
 \`\`\`url
 ${url}
@@ -171,8 +168,7 @@ ${content}
 Generated: ${new Date().toISOString()}
 `;
 
-    fs.writeFileSync(mdFile, markdown, "utf-8");
-  }
+  fs.writeFileSync(mdFile, markdown, "utf-8");
 
-  logger.info(`Saved ${contents.size} markdown files to ${vendorPath}`);
+  logger.info(`Saved ${fileName} markdown files to ${vendorPath}`);
 }

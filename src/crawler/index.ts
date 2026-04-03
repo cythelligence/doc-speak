@@ -1,7 +1,7 @@
 import { initializeBrowsers, crawlVendor } from "./web-crawler";
 import { startScheduler } from "./scheduler";
 import { Logger } from "./logger";
-import { vendors } from "../vendors.config";
+import { vendors } from "./vendors.config";
 import * as path from "path";
 import * as os from "os";
 

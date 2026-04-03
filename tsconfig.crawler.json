@@ -17,8 +17,7 @@
   },
   "include": [
     "src/crawler/**/*",
-    "src/lib/**/*",
-    "src/vendors.config.ts"
+    "src/lib/**/*"
   ],
   "exclude": [
     "node_modules",
