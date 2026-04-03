@@ -1,23 +1,25 @@
 import { ChromaClient } from "chromadb";
-import * as path from "path";
-import * as os from "os";
 import { Logger } from "../crawler/logger";
 import type { DocumentChunk } from "./chunking";
 import { generateEmbeddings } from "./embeddings";
 
 const logger = new Logger("ChromaDB");
 
-const CHROMA_DATA_PATH = process.env.CHROMA_DATA_PATH || path.join(os.homedir(), ".chroma");
+const CHROMA_HOST = process.env.CHROMA_HOST || "localhost";
+const CHROMA_PORT = parseInt(process.env.CHROMA_PORT || "8000", 10);
+const CHROMA_SSL = process.env.CHROMA_SSL === "true";
 
 let chromaClient: ChromaClient | null = null;
 
 export async function initializeChromaDB(): Promise<ChromaClient> {
   try {
-    logger.info(`Initializing ChromaDB with data path: ${CHROMA_DATA_PATH}`);
+    logger.info(`Initializing ChromaDB at ${CHROMA_HOST}:${CHROMA_PORT} (SSL: ${CHROMA_SSL})`);
 
-    // Initialize ChromaDB client with persistent storage
+    // Initialize ChromaDB client
     chromaClient = new ChromaClient({
-      path: CHROMA_DATA_PATH,
+      host: CHROMA_HOST,
+      port: CHROMA_PORT,
+      ssl: CHROMA_SSL,
     });
 
     logger.info("ChromaDB initialized successfully");

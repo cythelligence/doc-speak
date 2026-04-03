@@ -9,6 +9,8 @@
  *   node dist/cli/ingest.js vendor-a         # Ingest specific vendor
  */
 
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import { initializeIngestionPipeline, ingestAllVendors, ingestVendorDocuments } from "../lib/ingestion-pipeline";
 import { Logger } from "../crawler/logger";
 

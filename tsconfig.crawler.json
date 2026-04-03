@@ -17,13 +17,12 @@
   },
   "include": [
     "src/crawler/**/*",
-    "src/lib/**/*"
+    "src/lib/**/*",
+    "src/cli/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "src/server",
-    "src/components",
-    "src/cli"
+    "src/server"
   ]
 }

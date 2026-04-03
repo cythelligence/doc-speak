@@ -14,7 +14,10 @@
     "crawler:run": "node dist/crawler/index.js",
     "setup": "node scripts/setup.js",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "ingest:all": "node dist/cli/ingest.js all",
+    "vendors:list": "node dist/cli/vendors.js list",
+    "ingest:vendor": "node dist/cli/ingest.js"
   },
   "dependencies": {
     "@libsql/client": "^0.17.2",
@@ -22,6 +25,7 @@
     "@prisma/client": "^7.6.0",
     "chromadb": "^3.4.0",
     "crawlee": "^3.10.1",
+    "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "js-yaml": "^4.1.0",
     "node-cron": "^4.2.1",

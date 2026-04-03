@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import express, { Request, Response, Express } from 'express';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';

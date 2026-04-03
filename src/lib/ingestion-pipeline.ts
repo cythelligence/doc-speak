@@ -1,10 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import * as path from "path";
 import * as os from "os";
 import { Logger } from "../crawler/logger";
 import { vendors } from "../crawler/vendors.config";
-import {
-  loadMarkdownFilesFromDirectory,
-} from "./chunking";
+import { loadMarkdownFilesFromDirectory } from "./chunking";
 import {
   initializeChromaDB,
   createVendorCollection,
@@ -15,7 +15,7 @@ import { checkOllamaConnection, pullEmbeddingModel } from "./embeddings";
 
 const logger = new Logger("IngestionPipeline");
 
-const RAG_DATA_PATH = path.join(os.homedir(), "Documents", "RAG-Data", "raw");
+const RAG_DATA_PATH = process.env.RAG_DATA_PATH || path.join(os.homedir(), "Documents", "RAG-Data");
 
 export async function initializeIngestionPipeline(): Promise<void> {
   logger.info("Initializing Ingestion Pipeline...");

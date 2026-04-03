@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import { initializeBrowsers, crawlVendor } from "./web-crawler";
 import { startScheduler } from "./scheduler";
 import { Logger } from "./logger";
@@ -7,7 +9,7 @@ import * as os from "os";
 
 const logger = new Logger("CrawlerMain");
 
-const RAG_DATA_PATH = path.join(os.homedir(), "Documents", "RAG-Data", "raw");
+const RAG_DATA_PATH = process.env.RAG_DATA_PATH || path.join(os.homedir(), "Documents", "RAG-Data");
 
 async function main() {
   try {

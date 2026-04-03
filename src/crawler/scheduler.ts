@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import cron from "node-cron";
 import { Logger } from "./logger";
 import { crawlVendor } from "./web-crawler";
@@ -7,7 +9,7 @@ import * as os from "os";
 
 const logger = new Logger("CrawlScheduler");
 
-const RAG_DATA_PATH = path.join(os.homedir(), "Documents", "RAG-Data", "raw");
+const RAG_DATA_PATH = process.env.RAG_DATA_PATH || path.join(os.homedir(), "Documents", "RAG-Data");
 
 export function startScheduler(): void {
   logger.info("Starting crawl scheduler...");

@@ -8,6 +8,8 @@
  *   node dist/cli/query.js "Your question" vendor-a vendor-b
  */
 
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import { initializeChromaDB } from "../lib/chroma";
 import { executeQuery } from "../lib/query-orchestrator";
 import { Logger } from "../crawler/logger";
