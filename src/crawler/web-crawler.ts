@@ -14,6 +14,37 @@ export interface CrawleConfig {
   outputPath: string;
 }
 
+function isUrlAllowed(url: string, baseUrl: string, includePatterns: RegExp[], excludePatterns: RegExp[]): boolean {
+  // Only crawl URLs that start with the baseUrl
+  try {
+    if (!url.startsWith(baseUrl)) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+
+  // Check exclude patterns first
+  for (const pattern of excludePatterns) {
+    if (pattern.test(url)) {
+      return false;
+    }
+  }
+
+  // Check include patterns
+  if (includePatterns.length === 0) {
+    return true;
+  }
+
+  for (const pattern of includePatterns) {
+    if (pattern.test(url)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export async function initializeBrowsers() {
   try {
     logger.info("Checking Playwright browsers...");
@@ -34,13 +65,25 @@ export async function initializeBrowsers() {
 export async function crawlVendor(config: CrawleConfig): Promise<string[]> {
   const crawledUrls: string[] = [];
   const pageContents: Map<string, string> = new Map();
+  const visitedUrls = new Set<string>();
 
   const crawler = new PlaywrightCrawler({
-    maxRequestsPerCrawl: 500,
+    maxRequestsPerCrawl: 0, // No hard limit on requests
     maxRequestsPerMinute: 60,
+    navigationTimeoutSecs: 600, // e.g. set navigation timeout to 10 minutes
+    requestHandlerTimeoutSecs: 1800, // e.g. set requestHandler timeout to 30 minutes
+    maxConcurrency: 5,
     async requestHandler({ request, page, enqueueLinks }: any) {
       const url = request.url;
-      logger.info(`Crawling: ${url}`);
+      const depth = request.userData?.depth || 0;
+
+      // Skip if already visited or depth exceeded
+      if (visitedUrls.has(url) || depth > config.crawlDepth) {
+        return;
+      }
+
+      visitedUrls.add(url);
+      logger.info(`Crawling [Depth ${depth}/${config.crawlDepth}]: ${url}`);
 
       try {
         // Extract main content
@@ -49,29 +92,41 @@ export async function crawlVendor(config: CrawleConfig): Promise<string[]> {
           return main?.innerText || "";
         });
 
-        if (content) {
+        if (content && content.trim().length > 0) {
           pageContents.set(url, content);
           crawledUrls.push(url);
         }
 
-        // Enqueue links matching include patterns
-        await enqueueLinks({
-          globs: config.includePatterns.map((p) => p.source),
-          transformRequestFunction(request: any) {
-            // Default handler
-            return request;
-          },
-        });
+        // Enqueue links matching include patterns and not exceeding depth
+        if (depth < config.crawlDepth) {
+          await enqueueLinks({
+            globs: ["**/*"],
+            transformRequestFunction(request: any) {
+              const requestUrl = request.url;
+
+              // Check if URL matches our patterns and domain
+              if (isUrlAllowed(requestUrl, config.baseUrl, config.includePatterns, config.excludePatterns)) {
+                // Set depth for next level
+                request.userData = { depth: depth + 1 };
+                return request;
+              }
+
+              return false;
+            },
+          });
+        }
       } catch (error) {
         logger.error(`Error crawling ${url}`, error);
       }
     },
-    async errorHandler({ error, request }: any) {
+    async errorHandler({ request }: any, error: Error) {
       logger.error(`Crawl error for ${request.url}: ${error.message}`);
     },
   });
 
-  await crawler.addRequests([{ url: config.baseUrl, uniqueKey: config.baseUrl }]);
+  await crawler.addRequests([
+    { url: config.baseUrl, uniqueKey: config.baseUrl, userData: { depth: 0 } },
+  ]);
 
   await crawler.run();
 
