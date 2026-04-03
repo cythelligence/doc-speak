@@ -1,6 +1,5 @@
-import axios from "axios";
-import { Logger } from "../crawler/logger.js";
-import { searchCollection, listAllCollections } from "./chroma.js";
+import { Logger } from "../crawler/logger";
+import { searchCollection, listAllCollections } from "./chroma";
 
 const logger = new Logger("QueryOrchestrator");
 
@@ -9,6 +8,12 @@ const COPILOT_API_KEY = process.env.COPILOT_API_KEY;
 const COPILOT_ENDPOINT = process.env.COPILOT_ENDPOINT || "https://api.openai.com/v1";
 const LLM_PROVIDER = process.env.LLM_PROVIDER || "ollama";
 const OLLAMA_MODEL = "mistral"; // Default model, configurable
+
+function createAbortSignal(timeoutMs: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), timeoutMs);
+  return controller.signal;
+}
 
 export interface QueryContext {
   vendorIds: string[];
@@ -76,18 +81,20 @@ function buildContextPrompt(sources: Array<{ vendorId: string; content: string }
 
 async function queryWithOllama(query: string, context: string): Promise<string> {
   try {
-    const response = await axios.post(
-      `${OLLAMA_API_URL}/api/generate`,
-      {
+    const response = await fetch(`${OLLAMA_API_URL}/api/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         model: OLLAMA_MODEL,
         prompt: `${context}\n\nQuestion: ${query}\n\nAnswer:`,
         stream: false,
         temperature: 0.7,
-      },
-      { timeout: 120000 }
-    );
+      }),
+      signal: createAbortSignal(120000),
+    });
 
-    return response.data.response;
+    const data = await response.json();
+    return data.response;
   } catch (error) {
     logger.error("Failed to query Ollama", error);
     throw error;
@@ -100,9 +107,13 @@ async function queryWithCopilot(query: string, context: string): Promise<string>
   }
 
   try {
-    const response = await axios.post(
-      `${COPILOT_ENDPOINT}/chat/completions`,
-      {
+    const response = await fetch(`${COPILOT_ENDPOINT}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${COPILOT_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         model: "gpt-4",
         messages: [
           {
@@ -115,17 +126,12 @@ async function queryWithCopilot(query: string, context: string): Promise<string>
           },
         ],
         temperature: 0.7,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${COPILOT_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 120000,
-      }
-    );
+      }),
+      signal: createAbortSignal(120000),
+    });
 
-    return response.data.choices[0].message.content;
+    const data = await response.json();
+    return data.choices[0].message.content;
   } catch (error) {
     logger.error("Failed to query Copilot", error);
     throw error;

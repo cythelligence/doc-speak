@@ -1,7 +1,7 @@
 import cron from "node-cron";
-import { Logger } from "./logger.js";
-import { crawlVendor } from "./web-crawler.js";
-import { vendors } from "../vendors.config.js";
+import { Logger } from "./logger";
+import { crawlVendor } from "./web-crawler";
+import { vendors } from "../vendors.config";
 import * as path from "path";
 import * as os from "os";
 
@@ -40,7 +40,7 @@ export function startScheduler(): void {
   logger.info("Crawl scheduler started successfully");
 }
 
-export function triggerCrawl(vendorId: string): Promise<void> {
+export function triggerCrawl(vendorId: string): Promise<String[]> {
   const vendor = vendors.find((v) => v.id === vendorId);
   if (!vendor) {
     throw new Error(`Vendor not found: ${vendorId}`);

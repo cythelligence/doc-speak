@@ -8,9 +8,9 @@
  *   node dist/cli/query.js "Your question" vendor-a vendor-b
  */
 
-import { initializeChromaDB } from "../lib/chroma.js";
-import { executeQuery } from "../lib/query-orchestrator.js";
-import { Logger } from "../crawler/logger.js";
+import { initializeChromaDB } from "../lib/chroma";
+import { executeQuery } from "../lib/query-orchestrator";
+import { Logger } from "../crawler/logger";
 
 const logger = new Logger("QueryCLI");
 

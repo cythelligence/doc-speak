@@ -1,7 +1,7 @@
 import { PlaywrightCrawler } from "crawlee";
 import * as fs from "fs";
 import * as path from "path";
-import { Logger } from "./logger.js";
+import { Logger } from "./logger";
 
 const logger = new Logger("WebCrawler");
 
@@ -32,45 +32,43 @@ export async function initializeBrowsers() {
 }
 
 export async function crawlVendor(config: CrawleConfig): Promise<string[]> {
-  const crawler = new PlaywrightCrawler({
-    maxRequestsPerCrawl: 500,
-    maxRequestsPerMinute: 60,
-  });
-
   const crawledUrls: string[] = [];
   const pageContents: Map<string, string> = new Map();
 
-  crawler.addDefaultHandler(async ({ request, page, enqueueLinks }) => {
-    const url = request.url;
-    logger.info(`Crawling: ${url}`);
+  const crawler = new PlaywrightCrawler({
+    maxRequestsPerCrawl: 500,
+    maxRequestsPerMinute: 60,
+    async requestHandler({ request, page, enqueueLinks }: any) {
+      const url = request.url;
+      logger.info(`Crawling: ${url}`);
 
-    try {
-      // Extract main content
-      const content = await page.evaluate(() => {
-        const main = document.querySelector("main") || document.querySelector("article") || document.body;
-        return main?.innerText || "";
-      });
+      try {
+        // Extract main content
+        const content = await page.evaluate(() => {
+          const main = document.querySelector("main") || document.querySelector("article") || document.body;
+          return main?.innerText || "";
+        });
 
-      if (content) {
-        pageContents.set(url, content);
-        crawledUrls.push(url);
+        if (content) {
+          pageContents.set(url, content);
+          crawledUrls.push(url);
+        }
+
+        // Enqueue links matching include patterns
+        await enqueueLinks({
+          globs: config.includePatterns.map((p) => p.source),
+          transformRequestFunction(request: any) {
+            // Default handler
+            return request;
+          },
+        });
+      } catch (error) {
+        logger.error(`Error crawling ${url}`, error);
       }
-
-      // Enqueue links matching include patterns
-      await enqueueLinks({
-        globs: config.includePatterns.map((p) => p.source),
-        transformRequestFunction(page) {
-          // Default handler
-          return page;
-        },
-      });
-    } catch (error) {
-      logger.error(`Error crawling ${url}`, error);
-    }
-  });
-
-  crawler.addErrorHandler(async ({ error, request }) => {
-    logger.error(`Crawl error for ${request.url}: ${error.message}`);
+    },
+    async errorHandler({ error, request }: any) {
+      logger.error(`Crawl error for ${request.url}: ${error.message}`);
+    },
   });
 
   await crawler.addRequests([{ url: config.baseUrl, uniqueKey: config.baseUrl }]);

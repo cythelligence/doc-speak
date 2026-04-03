@@ -1,9 +1,9 @@
 import { ChromaClient } from "chromadb";
 import * as path from "path";
 import * as os from "os";
-import { Logger } from "../crawler/logger.js";
-import type { DocumentChunk } from "./chunking.js";
-import { generateEmbeddings } from "./embeddings.js";
+import { Logger } from "../crawler/logger";
+import type { DocumentChunk } from "./chunking";
+import { generateEmbeddings } from "./embeddings";
 
 const logger = new Logger("ChromaDB");
 
@@ -49,7 +49,7 @@ export async function createVendorCollection(vendorId: string, collectionName?: 
     }
 
     // Create new collection
-    const collection = await client.createCollection({
+    await client.createCollection({
       name,
       metadata: {
         vendor_id: vendorId,
@@ -133,20 +133,21 @@ export async function searchCollection(
     const collection = await client.getCollection({ name: collectionName });
 
     // Generate embedding for query
-    const { generateEmbedding } = await import("./embeddings.js");
+    const { generateEmbedding } = await import("./embeddings");
     const queryEmbedding = await generateEmbedding(query);
 
     // Search in collection
     const results = await collection.query({
-      query_embeddings: [queryEmbedding],
-      n_results: nResults,
+      queryEmbeddings: [queryEmbedding],
+      nResults: nResults,
     });
 
     const formattedResults = [];
     if (results.documents && results.documents[0]) {
       for (let i = 0; i < results.documents[0].length; i++) {
+        const content = results.documents[0][i];
         formattedResults.push({
-          content: results.documents[0][i],
+          content: content || "",
           metadata: (results.metadatas?.[0]?.[i] || {}) as Record<string, unknown>,
           distance: results.distances?.[0]?.[i] ?? 0,
         });

@@ -3,6 +3,9 @@ node_modules/
 .pnp
 .pnp.js
 
+# Build
+*.tsbuildinfo
+
 # Testing
 coverage/
 .nyc_output

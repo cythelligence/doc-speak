@@ -27,7 +27,7 @@ dev:
 	npm run dev
 
 web:
-	npm run web:dev
+	npm run server:dev
 
 crawler:
 	npm run crawler:run

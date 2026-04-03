@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Logger } from "../crawler/logger.js";
+import { Logger } from "../crawler/logger";
 
 const logger = new Logger("VectorStorage");
 

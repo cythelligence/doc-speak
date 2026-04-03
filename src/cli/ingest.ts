@@ -9,8 +9,8 @@
  *   node dist/cli/ingest.js vendor-a         # Ingest specific vendor
  */
 
-import { initializeIngestionPipeline, ingestAllVendors, ingestVendorDocuments } from "../lib/ingestion-pipeline.js";
-import { Logger } from "../crawler/logger.js";
+import { initializeIngestionPipeline, ingestAllVendors, ingestVendorDocuments } from "../lib/ingestion-pipeline";
+import { Logger } from "../crawler/logger";
 
 const logger = new Logger("IngestionCLI");
 

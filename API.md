@@ -273,23 +273,33 @@ curl -X POST http://localhost:3000/api/chat/clxx000000xxxxx \
 curl http://localhost:3000/api/sessions
 ```
 
-### JavaScript/Axios Examples
+### JavaScript/Fetch Examples
 
 ```javascript
 // Create session
-const session = await axios.post('/api/sessions', {
-  title: 'New Chat',
-  vendorIds: ['vendor-a', 'vendor-b']
+const sessionRes = await fetch('/api/sessions', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    title: 'New Chat',
+    vendorIds: ['vendor-a', 'vendor-b']
+  })
 });
+const session = await sessionRes.json();
 
 // Send message
-const response = await axios.post(`/api/chat/${session.data.id}`, {
-  message: 'Your question here',
-  vendorIds: ['vendor-a', 'vendor-b']
+const response = await fetch(`/api/chat/${session.id}`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    message: 'Your question here',
+    vendorIds: ['vendor-a', 'vendor-b']
+  })
 });
 
 // Get messages
-const messages = await axios.get(`/api/sessions/${session.data.id}/messages`);
+const messagesRes = await fetch(`/api/sessions/${session.id}/messages`);
+const messages = await messagesRes.json();
 ```
 
 ### Python Examples

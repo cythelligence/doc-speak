@@ -2,31 +2,59 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
+    "composite": true,
     "esModuleInterop": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
-
-    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
+    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "allowJs": true,
+    "incremental": true,
+    "ignoreDeprecations": "6.0"
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.crawler.json" }],
-  "exclude": ["node_modules"]
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs",
+      "noEmit": false,
+      "rootDir": "./src"
+    },
+    "transpileOnly": true,
+    "files": true,
+    "esm": true
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.crawler.json"
+    },
+    {
+      "path": "./tsconfig.server.json"
+    }
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "prisma"
+  ]
 }

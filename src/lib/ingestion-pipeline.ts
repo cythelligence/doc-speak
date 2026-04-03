@@ -1,17 +1,17 @@
 import * as path from "path";
 import * as os from "os";
-import { Logger } from "../crawler/logger.js";
-import { vendors } from "../vendors.config.js";
+import { Logger } from "../crawler/logger";
+import { vendors } from "../vendors.config";
 import {
   loadMarkdownFilesFromDirectory,
-} from "./chunking.js";
+} from "./chunking";
 import {
   initializeChromaDB,
   createVendorCollection,
   upsertDocumentChunks,
   getCollectionStats,
-} from "./chroma.js";
-import { checkOllamaConnection, pullEmbeddingModel } from "./embeddings.js";
+} from "./chroma";
+import { checkOllamaConnection, pullEmbeddingModel } from "./embeddings";
 
 const logger = new Logger("IngestionPipeline");
 

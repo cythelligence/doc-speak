@@ -1,15 +1,23 @@
-import axios from "axios";
-import { Logger } from "../crawler/logger.js";
+import { Logger } from "../crawler/logger";
 
 const logger = new Logger("Embeddings");
 
 const OLLAMA_API_URL = process.env.OLLAMA_API_URL || "http://localhost:11434";
 const EMBEDDING_MODEL = "nomic-embed-text";
 
+function createAbortSignal(timeoutMs: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), timeoutMs);
+  return controller.signal;
+}
+
 export async function checkOllamaConnection(): Promise<boolean> {
   try {
-    const response = await axios.get(`${OLLAMA_API_URL}/api/tags`, { timeout: 5000 });
-    logger.info("Ollama connection successful", response.data);
+    const response = await fetch(`${OLLAMA_API_URL}/api/tags`, {
+      signal: createAbortSignal(5000),
+    });
+    const data = await response.json();
+    logger.info("Ollama connection successful", data);
     return true;
   } catch (error) {
     logger.error("Ollama connection failed", error);
@@ -19,16 +27,18 @@ export async function checkOllamaConnection(): Promise<boolean> {
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
-    const response = await axios.post(
-      `${OLLAMA_API_URL}/api/embeddings`,
-      {
+    const response = await fetch(`${OLLAMA_API_URL}/api/embeddings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         model: EMBEDDING_MODEL,
         prompt: text,
-      },
-      { timeout: 30000 }
-    );
+      }),
+      signal: createAbortSignal(30000),
+    });
 
-    return response.data.embedding;
+    const data = await response.json();
+    return data.embedding;
   } catch (error) {
     logger.error(`Failed to generate embedding for text: ${text.substring(0, 50)}...`, error);
     throw error;
@@ -62,16 +72,18 @@ export async function pullEmbeddingModel(): Promise<void> {
   try {
     logger.info(`Pulling embedding model: ${EMBEDDING_MODEL}`);
 
-    const response = await axios.post(
-      `${OLLAMA_API_URL}/api/pull`,
-      {
+    const response = await fetch(`${OLLAMA_API_URL}/api/pull`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         name: EMBEDDING_MODEL,
         stream: false,
-      },
-      { timeout: 300000 } // 5 minutes timeout for model pulling
-    );
+      }),
+      signal: createAbortSignal(300000), // 5 minutes timeout for model pulling
+    });
 
-    logger.info(`Successfully pulled model: ${EMBEDDING_MODEL}`, response.data);
+    const data = await response.json();
+    logger.info(`Successfully pulled model: ${EMBEDDING_MODEL}`, data);
   } catch (error) {
     logger.error(`Failed to pull embedding model`, error);
     throw error;
