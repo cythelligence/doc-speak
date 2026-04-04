@@ -102,14 +102,6 @@ This will:
 
 ### 3. Install and Start ChromaDB
 
-ChromaDB can run in two modes: **embedded (default)** or **server mode**.
-
-**Option A: Embedded Mode (Recommended for development)**
-
-ChromaDB runs embedded in the application with no additional setup needed. The application will automatically use embedded ChromaDB if not configured otherwise.
-
-**Option B: Server Mode (Recommended for production)**
-
 First, install ChromaDB:
 
 ```bash
@@ -123,8 +115,16 @@ npm install -g chromadb
 Then start the ChromaDB server:
 
 ```bash
-chroma run --host localhost --port 8000
+chroma run --host localhost --path ./chroma_data
 ```
+
+Alternatively, run chromadb server via npx:
+
+```bash
+npx chromadb run --path ./chroma_data
+```
+
+By default, the server runs on localhost on the port 8000.
 
 For server mode, update `.env.local`:
 

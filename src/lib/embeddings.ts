@@ -7,7 +7,17 @@ const EMBEDDING_MODEL = "nomic-embed-text";
 
 function createAbortSignal(timeoutMs: number): AbortSignal {
   const controller = new AbortController();
-  setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutId = setTimeout(() => {
+    if (!controller.signal.aborted) {
+      controller.abort();
+    }
+  }, timeoutMs);
+  
+  // Clean up timeout if request completes before timeout
+  if (controller.signal.addEventListener) {
+    controller.signal.addEventListener('abort', () => clearTimeout(timeoutId));
+  }
+  
   return controller.signal;
 }
 
@@ -37,10 +47,18 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       signal: createAbortSignal(30000),
     });
 
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+    }
+
     const data = await response.json();
     return data.embedding;
   } catch (error) {
-    logger.error(`Failed to generate embedding for text: ${text.substring(0, 50)}...`, error);
+    if (error instanceof Error && error.name === 'AbortError') {
+      logger.error(`Ollama request timeout for embedding (30s): ${text.substring(0, 50)}...`);
+    } else {
+      logger.error(`Failed to generate embedding for text: ${text.substring(0, 50)}...`, error);
+    }
     throw error;
   }
 }

@@ -11,7 +11,17 @@ const OLLAMA_MODEL = "mistral"; // Default model, configurable
 
 function createAbortSignal(timeoutMs: number): AbortSignal {
   const controller = new AbortController();
-  setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutId = setTimeout(() => {
+    if (!controller.signal.aborted) {
+      controller.abort();
+    }
+  }, timeoutMs);
+  
+  // Clean up timeout if request completes before timeout
+  if (controller.signal.addEventListener) {
+    controller.signal.addEventListener('abort', () => clearTimeout(timeoutId));
+  }
+  
   return controller.signal;
 }
 
@@ -90,13 +100,23 @@ async function queryWithOllama(query: string, context: string): Promise<string> 
         stream: false,
         temperature: 0.7,
       }),
-      signal: createAbortSignal(120000),
+      signal: createAbortSignal(300000), // Increased to 5 minutes for complex queries
     });
+
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+    }
 
     const data = await response.json();
     return data.response;
   } catch (error) {
-    logger.error("Failed to query Ollama", error);
+    if (error instanceof Error && error.name === 'AbortError') {
+      logger.error("Ollama request timeout (5 minutes exceeded) - check if Ollama is running and responsive", error);
+    } else if (error instanceof TypeError && error.message.includes('fetch')) {
+      logger.error(`Failed to connect to Ollama at ${OLLAMA_API_URL} - is it running?`, error);
+    } else {
+      logger.error("Failed to query Ollama", error);
+    }
     throw error;
   }
 }
@@ -130,10 +150,18 @@ async function queryWithCopilot(query: string, context: string): Promise<string>
       signal: createAbortSignal(120000),
     });
 
+    if (!response.ok) {
+      throw new Error(`Copilot API error: ${response.status} ${response.statusText}`);
+    }
+
     const data = await response.json();
     return data.choices[0].message.content;
   } catch (error) {
-    logger.error("Failed to query Copilot", error);
+    if (error instanceof Error && error.name === 'AbortError') {
+      logger.error("Copilot request timeout (2 minutes exceeded)", error);
+    } else {
+      logger.error("Failed to query Copilot", error);
+    }
     throw error;
   }
 }

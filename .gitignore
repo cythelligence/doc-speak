@@ -51,11 +51,12 @@ pids
 Thumbs.db
 .Spotlight-V100
 .Trashes
+.DS_Store
 
 # Project specific
 chroma_data/
-rag_chat.db
 .prisma/client
+prisma/migrations/
 
 # Crawler data (keep in version control)
 # ~/Documents/RAG-Data/ is external to repo
