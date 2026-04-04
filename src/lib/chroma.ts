@@ -31,15 +31,16 @@ export async function initializeChromaDB(): Promise<ChromaClient> {
   }
 }
 
-export function getChromaClient(): ChromaClient {
+export async function getChromaClient(): Promise<ChromaClient> {
   if (!chromaClient) {
-    throw new Error("ChromaDB not initialized. Call initializeChromaDB first.");
+    //throw new Error("ChromaDB not initialized. Call initializeChromaDB first.");
+    await initializeChromaDB();
   }
-  return chromaClient;
+  return chromaClient as ChromaClient;
 }
 
 export async function createVendorCollection(vendorId: string, collectionName?: string): Promise<string> {
-  const client = getChromaClient();
+  const client = await getChromaClient();
   const name = collectionName || `vendor_${vendorId}`;
 
   try {
@@ -72,7 +73,7 @@ export async function upsertDocumentChunks(
   vendorId: string,
   chunks: DocumentChunk[]
 ): Promise<void> {
-  const client = getChromaClient();
+  const client = await getChromaClient();
   const collectionName = `vendor_${vendorId}`;
 
   try {
@@ -129,7 +130,7 @@ export async function searchCollection(
   query: string,
   nResults: number = 5
 ): Promise<Array<{ content: string; metadata: Record<string, unknown>; distance: number }>> {
-  const client = getChromaClient();
+  const client = await getChromaClient();
   const collectionName = `vendor_${vendorId}`;
 
   try {
@@ -166,7 +167,7 @@ export async function searchCollection(
 }
 
 export async function getCollectionStats(vendorId: string): Promise<{ count: number; name: string }> {
-  const client = getChromaClient();
+  const client = await getChromaClient();
   const collectionName = `vendor_${vendorId}`;
 
   try {
@@ -182,7 +183,7 @@ export async function getCollectionStats(vendorId: string): Promise<{ count: num
 }
 
 export async function listAllCollections(): Promise<string[]> {
-  const client = getChromaClient();
+  const client = await getChromaClient();
 
   try {
     const collections = await client.listCollections();
