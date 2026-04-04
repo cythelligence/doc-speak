@@ -6,8 +6,9 @@ const logger = new Logger("QueryOrchestrator");
 const OLLAMA_API_URL = process.env.OLLAMA_API_URL || "http://localhost:11434";
 const COPILOT_API_KEY = process.env.COPILOT_API_KEY;
 const COPILOT_ENDPOINT = process.env.COPILOT_ENDPOINT || "https://api.openai.com/v1";
+const COPILOT_MODEL = process.env.COPILOT_MODEL || "gemini-2.5-flash";
 const LLM_PROVIDER = process.env.LLM_PROVIDER || "ollama";
-const OLLAMA_MODEL = "mistral"; // Default model, configurable
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "mistral"; // Default model, configurable
 
 function createAbortSignal(timeoutMs: number): AbortSignal {
   const controller = new AbortController();
@@ -134,7 +135,7 @@ async function queryWithCopilot(query: string, context: string): Promise<string>
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4",
+        model: COPILOT_MODEL,
         messages: [
           {
             role: "system",
@@ -147,7 +148,7 @@ async function queryWithCopilot(query: string, context: string): Promise<string>
         ],
         temperature: 0.7,
       }),
-      signal: createAbortSignal(120000),
+      signal: createAbortSignal(300000),
     });
 
     if (!response.ok) {
@@ -158,7 +159,7 @@ async function queryWithCopilot(query: string, context: string): Promise<string>
     return data.choices[0].message.content;
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      logger.error("Copilot request timeout (2 minutes exceeded)", error);
+      logger.error("Copilot request timeout (5 minutes exceeded)", error);
     } else {
       logger.error("Failed to query Copilot", error);
     }
@@ -187,7 +188,7 @@ export async function executeQuery(queryContext: QueryContext): Promise<QueryRes
       return {
         answer: "I could not find relevant information in the selected documentation.",
         sources: [],
-        model: LLM_PROVIDER === "copilot" ? "gpt-4" : OLLAMA_MODEL,
+        model: LLM_PROVIDER === "copilot" ? COPILOT_MODEL : OLLAMA_MODEL,
         provider: LLM_PROVIDER,
       };
     }
@@ -217,7 +218,7 @@ export async function executeQuery(queryContext: QueryContext): Promise<QueryRes
         content: r.content.substring(0, 200),
         distance: r.distance,
       })),
-      model: LLM_PROVIDER === "copilot" ? "gpt-4" : OLLAMA_MODEL,
+      model: LLM_PROVIDER === "copilot" ? COPILOT_MODEL : OLLAMA_MODEL,
       provider: LLM_PROVIDER,
     };
   } catch (error) {
