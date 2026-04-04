@@ -33,10 +33,9 @@ try {
 // Step 3: Create required directories
 console.log("📁 Creating required directories...");
 const ragDataPath = path.join(os.homedir(), "Documents", "RAG-Data");
-const rawPath = path.join(ragDataPath, "raw");
 const chromaPath = path.join(process.cwd(), "chroma_data");
 
-for (const dir of [rawPath, chromaPath]) {
+for (const dir of [ragDataPath, chromaPath]) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
     console.log(`  ✅ Created ${dir}`);
@@ -80,13 +79,25 @@ try {
   console.log("   Docker not found - local ChromaDB will be used\n");
 }
 
-// Step 7: Final instructions
+// Step 7: ChromaDB Information
+console.log("🗂️  ChromaDB Vector Database");
+console.log("   ChromaDB stores document embeddings for RAG retrieval");
+console.log("   Options:");
+console.log("   • Embedded (default): Runs within the application");
+console.log("   • Server mode: Run separately with: chroma run --host localhost --port 8000");
+console.log("   Configure via environment variables:");
+console.log("   - CHROMA_HOST=localhost (default)");
+console.log("   - CHROMA_PORT=8000 (default)");
+console.log("   - CHROMA_SSL=false (default)\n");
+
+// Step 8: Final instructions
 console.log("✨ Setup Complete!");
 console.log("==================\n");
 console.log("Next steps:");
 console.log("1. Ensure Ollama is running: ollama serve");
-console.log("2. In another terminal, run: npm run dev");
-console.log("3. Open http://localhost:3000 in your browser\n");
+console.log("2. Optional: Start ChromaDB server: chroma run --host localhost --port 8000");
+console.log("3. In another terminal, run: npm run dev");
+console.log("4. Open http://localhost:3000 in your browser\n");
 console.log("Configuration files:");
 console.log("- .env.local: Environment variables");
 console.log("- vendors.config.ts: Vendor documentation URLs");

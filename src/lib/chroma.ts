@@ -22,6 +22,7 @@ export async function initializeChromaDB(): Promise<ChromaClient> {
       ssl: CHROMA_SSL,
     });
 
+    logger.info(`ChromaDB Heartbeat: ${await chromaClient.heartbeat()}`);
     logger.info("ChromaDB initialized successfully");
     return chromaClient;
   } catch (error) {

@@ -58,10 +58,15 @@ A comprehensive local-first RAG (Retrieval-Augmented Generation) system built wi
   - macOS: `brew install ollama` or download from [ollama.ai](https://ollama.ai)
   - Linux: Download from [ollama.ai](https://ollama.ai)
   - Windows: Download from [ollama.ai](https://ollama.ai)
+- **ChromaDB** (vector database for document storage)
+  - macOS: `pip install chromadb` (requires Python 3.9+)
+  - Linux: `pip install chromadb`
+  - Windows: `pip install chromadb` (requires Python 3.9+)
+  - Or install via npm: `npm install chromadb` (included in project dependencies)
 
 ### Optional
 
-- **Docker** (for potential ChromaDB scaling, not required for basic usage)
+- **Docker** (for ChromaDB server mode, not required for basic usage)
 - **Git** (for version control)
 
 ## Installation
@@ -95,7 +100,41 @@ This will:
 - Verify Node.js version
 - Check for Ollama installation
 
-### 3. Start Ollama
+### 3. Install and Start ChromaDB
+
+ChromaDB can run in two modes: **embedded (default)** or **server mode**.
+
+**Option A: Embedded Mode (Recommended for development)**
+
+ChromaDB runs embedded in the application with no additional setup needed. The application will automatically use embedded ChromaDB if not configured otherwise.
+
+**Option B: Server Mode (Recommended for production)**
+
+First, install ChromaDB:
+
+```bash
+# macOS/Linux with pip (requires Python 3.9+)
+pip install chromadb
+
+# Or via npm (alternative)
+npm install -g chromadb
+```
+
+Then start the ChromaDB server:
+
+```bash
+chroma run --host localhost --port 8000
+```
+
+For server mode, update `.env.local`:
+
+```env
+CHROMA_HOST=localhost
+CHROMA_PORT=8000
+CHROMA_SSL=false
+```
+
+### 4. Start Ollama
 
 In a separate terminal:
 
@@ -105,7 +144,7 @@ ollama serve
 
 This starts Ollama on `localhost:11434` with default settings.
 
-### 4. Pull Required Models
+### 5. Pull Required Models
 
 In another terminal, ensure the embedding model is available:
 
@@ -122,8 +161,10 @@ ollama pull mistral  # or your preferred model
 # Ollama Configuration (for embeddings and LLM)
 OLLAMA_API_URL=http://localhost:11434
 
-# ChromaDB Configuration
-CHROMA_DATA_PATH=./chroma_data
+# ChromaDB Configuration (Vector Database)
+CHROMA_HOST=localhost
+CHROMA_PORT=8000
+CHROMA_SSL=false
 
 # Microsoft Copilot/OpenAI Configuration (optional, alternative to Ollama)
 COPILOT_API_KEY=your_api_key_here
@@ -148,6 +189,8 @@ PORT=3000
 
 - `.env.local` is loaded automatically by the app (never commit to git)
 - `OLLAMA_API_URL` must point to running Ollama instance
+- `CHROMA_HOST` and `CHROMA_PORT` must match your ChromaDB server (default: localhost:8000)
+- `CHROMA_SSL` set to `true` if ChromaDB uses HTTPS
 - `LLM_PROVIDER=ollama` uses local models (recommended for privacy)
 - `LLM_PROVIDER=copilot` requires valid API key and internet connection
 

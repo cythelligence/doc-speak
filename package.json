@@ -20,6 +20,7 @@
     "ingest:vendor": "node dist/cli/ingest.js"
   },
   "dependencies": {
+    "@chroma-core/default-embed": "^0.1.9",
     "@libsql/client": "^0.17.2",
     "@prisma/adapter-libsql": "^7.6.0",
     "@prisma/client": "^7.6.0",
